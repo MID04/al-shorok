@@ -167,7 +167,7 @@ dialog{border:0;padding:0;max-width:min(1100px,94vw);width:100%;background:#1717
 
 <section id="quote"><div class="w qg">
 <div class="rv"><div class="tag">Request a Quote</div><h2>Tell us what your project needs.</h2><p class="lead">Share your requirements with our team for a tailored industrial supply inquiry.</p></div>
-<form id="rfq" novalidate class="rv" aria-describedby="st">
+<form id="rfq" action="https://formspree.io/f/xvkzbjzk" method="POST" novalidate class="rv" aria-describedby="st">
 <div class="f"><label for="fn">Full name *</label><input id="fn" name="Full name" required autocomplete="name"><span class="er"></span></div>
 <div class="f"><label for="co">Company name *</label><input id="co" name="Company" required autocomplete="organization"><span class="er"></span></div>
 <div class="f"><label for="em">Work email *</label><input id="em" name="Email" type="email" required autocomplete="email"><span class="er"></span></div>
@@ -179,9 +179,9 @@ dialog{border:0;padding:0;max-width:min(1100px,94vw);width:100%;background:#1717
 <div class="f"><label for="pr">Required product or material *</label><input id="pr" name="Product" required list="pl-list"><span class="er"></span></div>
 <div class="f"><label for="qt">Estimated quantity</label><input id="qt" name="Quantity"></div>
 <div class="f full"><label for="ad">Additional requirements</label><textarea id="ad" name="Notes" rows="4"></textarea></div>
-<div class="f full"><label for="fl2">Attach RFQ documents (PDF, DOC, DOCX, XLS, XLSX, JPG, PNG &middot; max 10 MB each)</label><input id="fl2" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"><span class="er"></span></div>
-<div class="f full" style="flex-direction:row;gap:12px;flex-wrap:wrap"><button class="btn p" type="submit">Prepare my request</button><a class="btn" id="wa" href="#" target="_blank" rel="noopener">Send via WhatsApp</a></div>
-<p id="st" role="status" aria-live="polite">This page is not yet connected to a form server. Submitting opens your email app with the request filled in; nothing is sent until you press send there. Attachments are not transmitted by this page &mdash; attach them to the email or WhatsApp message.</p>
+<p class="f full" style="color:var(--muted);font-size:.9rem">Please send supporting documents separately by email or WhatsApp after submitting your request.</p>
+<div class="f full" style="flex-direction:row;gap:12px;flex-wrap:wrap"><button class="btn p" type="submit">Send request</button><a class="btn" id="wa" href="#" target="_blank" rel="noopener">Send via WhatsApp</a></div>
+<p id="st" role="status" aria-live="polite">Your contact and request details are sent via Formspree to our team. Send supporting documents separately by email or WhatsApp.</p>
 </form></div></section>
 
 <section id="contact"><div class="w">
@@ -224,15 +224,15 @@ $("#c-wa").href=$("#wa").href="https://wa.me/"+C.wa;$("#c-wa").textContent=C.pho
 $("#c-ad").textContent=$("#f-ad").textContent=C.address;$("#yr").textContent=new Date().getFullYear();
 H($("#bk"),/^https:\/\/(www\.)?calendly\.com\//.test(C.calendlyUrl)?`<a class="a btn p" style="margin-top:12px" href="${C.calendlyUrl}" target="_blank" rel="noopener">Book a Meeting</a>`:`<p>Online booking is not configured yet. Please contact us by phone, WhatsApp or email to arrange a meeting.</p>`);
 /* RFQ */
-const OK=/\.(pdf|docx?|xlsx?|jpe?g|png)$/i,MAX=10*1048576;
-function body(f){return [...f.querySelectorAll("input:not([type=file]),textarea")].map(e=>e.value.trim()&&`${e.name}: ${e.value.trim()}`).filter(Boolean).join("\n")}
-$("#rfq").addEventListener("submit",e=>{e.preventDefault();const f=e.target;let bad=null;
-f.querySelectorAll("[required]").forEach(i=>{const m=!i.value.trim()?"This field is required.":i.type=="email"&&!/^\S+@\S+\.\S+$/.test(i.value)?"Enter a valid email address.":"";i.setAttribute("aria-invalid",!!m);i.nextElementSibling.textContent=m;if(m&&!bad)bad=i});
-const fi=$("#fl2"),fe=[...fi.files].filter(x=>!OK.test(x.name)||x.size>MAX).map(x=>x.name);fi.nextElementSibling.textContent=fe.length?"Not accepted (type or over 10 MB): "+fe.join(", "):"";if(fe.length&&!bad)bad=fi;
+function body(f){return [...f.querySelectorAll("input:not([type=file]),textarea")].map(e=>e.value.trim()&&e.name+": "+e.value.trim()).filter(Boolean).join("\n")}
+$("#rfq").addEventListener("submit",async e=>{e.preventDefault();const f=e.target;let bad=null;
+f.querySelectorAll("[required]").forEach(i=>{const m=!i.value.trim()?"This field is required.":i.type=="email"&&!/^\S+@\S+\.\S+$/.test(i.value)?"Enter a valid email address.":"";i.setAttribute("aria-invalid",!!m);if(i.nextElementSibling)i.nextElementSibling.textContent=m;if(m&&!bad)bad=i});
 if(bad){bad.focus();return}
-const b=body(f);location.href=`${mail}?subject=${encodeURIComponent("RFQ - "+$("#co").value.trim())}&body=${encodeURIComponent(b)}`;
-$("#wa").href="https://wa.me/"+C.wa+"?text="+encodeURIComponent("RFQ\n"+b);
-$("#st").innerHTML="Your email app should now open with the request filled in. If it does not, use the <a href=\""+$("#wa").href+"\" target=\"_blank\" rel=\"noopener\">WhatsApp</a> button or email "+C.email+". Nothing has been sent until you send it."});
+const requestText=body(f),submit=f.querySelector("button[type=submit]");submit.disabled=true;$("#st").textContent="Sending your request…";
+try{const res=await fetch(f.action,{method:"POST",body:new FormData(f),headers:{Accept:"application/json"}});if(!res.ok)throw new Error("Submission failed");
+$("#wa").href="https://wa.me/"+C.wa+"?text="+encodeURIComponent("RFQ\n"+requestText);f.reset();$("#st").textContent="Thank you. Your request has been sent to our team. We will contact you soon.";
+}catch(err){$("#wa").href="https://wa.me/"+C.wa+"?text="+encodeURIComponent("RFQ\n"+requestText);$("#st").textContent="We could not send your request. Please try WhatsApp or email "+C.email+"."}
+finally{submit.disabled=false}});
 /* nav, reveal, counters */
 const hd=$("#hd"),mb=$("#mb"),mn=$("#menu");addEventListener("scroll",()=>hd.classList.toggle("s",scrollY>20),{passive:true});
 mb.onclick=()=>{const o=mn.classList.toggle("o");mb.setAttribute("aria-expanded",o)};mn.onclick=e=>{if(e.target.tagName=="A"){mn.classList.remove("o");mb.setAttribute("aria-expanded",false)}};
