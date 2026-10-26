@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "supportedLocales": [
+    "en",
+    "ar"
+  ],
+  "articles": [],
+  "articleTemplate": {
+    "id": "unique-article-id",
+    "translations": {
+      "en": {
+        "slug": "english-article-slug",
+        "title": "English title",
+        "description": "English summary",
+        "body": "English article body"
+      },
+      "ar": {
+        "slug": "arabic-article-slug",
+        "title": "العنوان بالعربية",
+        "description": "ملخص المقال بالعربية",
+        "body": "نص المقال بالعربية"
+      }
+    }
+  }
+}
