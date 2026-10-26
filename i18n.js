@@ -79,12 +79,13 @@
   function setup() {
     if (!document.body) return;
     translate(document.body);
-    const menu=document.getElementById("menu");
-    if(menu&&!document.getElementById("lang-switch")){
-      const li=document.createElement("li"),a=document.createElement("a");
-      a.id="lang-switch";a.className="language-switch";a.href=isAr?"./":"ar/";
+    if(!document.getElementById("lang-switch")){
+      const a=document.createElement("a");
+      a.id="lang-switch";a.className="language-switch";a.href=isAr?"../":"../ar/";
       a.textContent=isAr?"English":"العربية";a.lang=isAr?"en":"ar";a.hreflang=a.lang;
-      li.appendChild(a);menu.appendChild(li);
+      a.setAttribute("aria-label",isAr?"Switch language to English":"تغيير اللغة إلى العربية");
+      a.style.cssText="position:fixed;top:max(16px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));z-index:99999;display:flex;align-items:center;justify-content:center;min-width:104px;min-height:44px;padding:0 18px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:#123d35;color:#fff;font:700 15px/1.2 Cairo,Arial,sans-serif;text-decoration:none;box-shadow:0 5px 18px rgba(0,0,0,.2);visibility:visible";
+      document.body.appendChild(a);
     }
     const base="https://alshorouksupplies.com/";
     [["en",base],["ar",base+"ar/"],["x-default",base]].forEach(([l,u])=>{
